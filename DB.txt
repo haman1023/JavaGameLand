@@ -1,0 +1,87 @@
+
+
+SELECT * FROM shopdb; //  검색
+
+DROP USER director  //  디렉터 제거
+
+CREATE USER 유저명@호스트 IDENTIFIED BY '비밀번호';   //  유저 생성
+GRANT 권한 ON 테이블이름 TO 유저명@호스트 [WITH GRANT OPTION]  //  유저권한 설정, []는 선택 WITH GRANT OPTION은 다른사람에게 권한을 줄수있는것
+
+USE MySQL;  //  MySQL DB를 사용한다.
+DESC USER;  //  테이블의 구조를 알 수 있다.
+SELECT HOST, USER FROM USER;  //  USER table 의 USER, HOST만 검색
+
+SHOW DATABASES; //  데이터베이스 검색
+
+
+
+
+--------------- 리눅스 명령어 -----------------
+mysql -u root -p  //  mysql 접속
+
+//  비번설정 낮게 바꾸기
+set global validate_password_policy=0;
+set global validate_password_length=0;
+
+show variables like '%password%';
+
+//  설정파일 (위 명령어 쓰면 리눅스 킬때마다 설정가능)
+vi /etc/my.cnf
+
+
+
+
+--------------- MySQL 명령어 -----------------
+
+
+==============================
+DDL = 데이터 정의어(Definition)
+==============================
+
+CREATE(생성) ALTER(수정) DROP(제거)
+
+------  CREATE 사용방법 ------
+CREATE DATABASE DB이름; //  DB생성
+CRATE TABLE TABLE이름 (
+  열이름 데이터타입 타입제약조건,
+  열이름 데이터타입.....);
+
+------  ALTER 사용방법 ------
+ALTER TABLE TABLE이름 RENAME 새TABLE이름; //  TABLE 이름 변경
+ALTER TABLE TABLE이름 MODIFY 열이름 새데이터타입;  //  TABLE의 열 데이터타입 변경
+ALTER TABLE TABLE이름 MODIFY 열이름 데이터타입 옵션; //  TABLE의 열 데이터타입의 옵션 변경
+ALTER TABLE TABLE이름 CHANGE 열이름 새열이름 데이터타입;  //  TABLE의 열 이름 변경
+ALTER TABLE TABLE이름 ADD 제약조건;  //  ?????
+
+ALTER TABLE TABLE이름 ADD (CONSTRAINT-생략가능) FOREIGN KEY(열이름) REFERENCES 참조테이블(열이름);
+ALTER TABLE TABLE이름 ADD (COLUMN-생략가능) 열이름 데이터타입 제약조건;  //  열추가
+// ADD 다음에 무엇을 추가할지 쓴다. ex) COLUMN, CONSTRAINT 등등
+
+ALTER TABLE TABLE이름 DROP 열이름;  //  열 제거
+
+------  DROP 사용방법 ------
+DROP DATABASE DB이름;
+DROP TABLE TABLE이름;
+
+================================
+DML = 데이터 조작어(Manipulation)
+================================
+
+------  SELECT 사용방법 ------
+SELECT 열이름 FROM DB이름.TABLE이름;    //  열 검색, DB를 사용하지 않아도 검색된다.
+SELECT 열이름 FROM 테이블이름;    //  열 검색
+SELECT 열이름 AS 별칭 FROM 테이블이름;  // 결과를 보여줄때 열이름을 별칭으로 바꾼다
+SELECT 열이름 FROM 테이블이름 LIMIT 숫자;   //  숫자만큼 보여준다.
+SELECT 열이름 FROM 테이블이름 LIMIT 앞숫자, 뒷숫자;   //  앞숫자부터(index) 뒷숫자만큼 보여준다.
+
+SELECT 열이름 FROM 테이블이름 WHERE 조건;
+SELECT 열이름 FROM 테이블이름 WHERE 조건 and 조건;  //  여러조건을 넣을 경우
+
+------  INSERT 사용방법 ------
+INSERT INTO 테이블이름 (열이름, 열이름, ........) VALUES (데이터, 데이터, ........); //  데이터 입력
+INSERT INTO 테이블이름 VALUES (데이터, 데이터, ........); //  모든 데이터를 입력하면 앞쪽() 생략가능
+
+
+
+DCL = 데이터 제어어(Control)
+GRANT(권한 부여) REBOKE(권한 제거) COMMIT(처리 적용) ROLLBACK(처리 취소)
