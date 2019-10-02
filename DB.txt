@@ -14,6 +14,9 @@ SELECT HOST, USER FROM USER;  //  USER table 의 USER, HOST만 검색
 SHOW DATABASES; //  데이터베이스 검색
 SHOW TABLE STATUS;  //  TABLE들의 정보를 알려준다.
 
+SELECT empno AS 사원번호, ename AS 사원이름, comm AS 커미션 FROM emp WHERE comm IS NULL; //  NULL값인 것을 찾는것
+SELECT empno AS 사원번호, ename AS 사원이름, comm AS 커미션 FROM emp WHERE comm IS NOT NULL; //  NULL값이 아닌것을 찾는것
+
 
 
 
