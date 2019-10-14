@@ -1,82 +1,74 @@
+/* 설치한 express 모듈 불러오기 */
 var express = require('express');
-var path = require('path');
+
+/* 설치한 socket.io 모듈 불러오기 */
+var socket = require('socket.io');
+
+/* Node.js 기본 내장 모듈 불러오기 */
+var http = require('http');
+
+/* Node.js 기본 내장 모듈 불러오기 */
+var fs = require('fs');
+
+/* express 객체 생성 */
 var app = express();
-var mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_DB);
-var db = mongoose.connection;
+/* express http 서버 생성 */
+var server = http.createServer(app);
 
-db.once("open", function(){
-  console.log("DB connected!");
-});
-db.on("error", function(err){
-  console.log("DB ERROR :", err);
-});
+/* 생성된 서버를 socket.io에 바인딩 */
+var io = socket(server);
 
-var dataSchema = mongoose.Schema({
-  name:String,
-  count:Number
-});
-var Data = mongoose.model('data', dataSchema);
-Data.findOne({name:"myData"}, function(err,data){
-  if(err) return console.log("Data ERROR:",err);
-  if(!data){
-    Data.create({name:"myData",count:0},function(err,data){
-      if(err) return console.log("Data ERROR:",err);
-      console.log("Counter initialized:",data);
-    });
-  }
-});
+app.use('/css', express.static('./static/css'));
+app.use('/js', express.static('./static/js'));
 
-app.set("view engine", 'ejs');
-app.use(express.static(__dirname + '/public'));
-
-var data = {count:0};
-app.get('/', function (req, res){
-  Data.findOne({name:"myData"}, function(err,data){
-    if(err) return console.log("Data ERROR:",err);
-    data.count++;
-    data.save(function (err) {
-      if(err) return console.log("Data ERROR:",err);
-      res.render('my_first_ejs',data);
-    });
+/* Get 방식으로 / 경로에 접속하면 실행 됨 */
+app.get('/', function(request, response) {
+  fs.readFile('./static/index.html', function(err, data) {
+    if(err) {
+      response.send('에러');
+    } else {
+      response.writeHead(200, {'Content-Type':'text/html'});
+      response.write(data);
+      response.end();
+    }
   });
 });
 
-app.get('/reset', function(req, res){
-  setCounter(res,0);
-});
+io.sockets.on('connection', function(socket) {
 
-app.get('/set/count', function(req, res){
-  if(req.query.count) setCounter(res, req.query.count);
-  else getCounter(res);
-});
+  /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
+  socket.on('newUser', function(name) {
+    console.log(name + ' 님이 접속하였습니다.');
 
-app.get('/set/:num', function(req, res){
-  if(req.params.num) setCounter(res, req.params.num);
-  else getCounter(res);
-});
+    /* 소켓에 이름 저장해두기 */
+    socket.name = name;
 
-function setCounter(res, num){
-  console.log("setCounter");
-  Data.findOne({name:"myData"}, function(err,data){
-    if(err) return console.log("Data ERROR:",err);
-    data.count = num;
-    data.save(function (err) {
-      if(err) return console.log("Data ERROR:",err);
-      res.render('my_first_ejs',data);
-    });
+    /* 모든 소켓에게 전송 */
+    io.sockets.emit('update', {type: 'connect', name: 'SERVER', message: name + '님이 접속하였습니다.'});
   });
-}
 
-function getCounter(res){
-  console.log("getCounter");
-  Data.findOne({name:"myData"}, function(err,data){
-    if(err) return console.log("Data ERROR:",err);
-    res.render('my_first_ejs',data);
+  /* 전송한 메시지 받기 */
+  socket.on('message', function(data) {
+    /* 받은 데이터에 누가 보냈는지 이름을 추가 */
+    data.name = socket.name;
+
+    console.log(data);
+
+    /* 보낸 사람을 제외한 나머지 유저에게 메시지 전송 */
+    socket.broadcast.emit('update', data);
   });
-}
 
-app.listen(3000, function(){
-  console.log('Server On!');
+  /* 접속 종료 */
+  socket.on('disconnect', function() {
+    console.log(socket.name + '님이 나가셨습니다.');
+
+    /* 나가는 사람을 제외한 나머지 유저에게 메시지 전송 */
+    socket.broadcast.emit('update', {type: 'disconnect', name: 'SERVER', message: socket.name + '님이 나가셨습니다.'});
+  });
+});
+
+/* 서버를 8080 포트로 listen */
+server.listen(3000, function() {
+  console.log('서버 실행 중..');
 });
