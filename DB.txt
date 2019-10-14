@@ -42,7 +42,7 @@ vi /etc/my.cnf
 DDL = 데이터 정의어(Definition)
 ==============================
 
-CREATE(생성) ALTER(수정) DROP(제거)
+CREATE(생성) ALTER(수정) DROP(제거) TRUNCATE(테이블을 비운다)
 
 ------  CREATE 사용방법 ------
 CREATE DATABASE DB이름; //  DB생성
@@ -78,9 +78,10 @@ SELECT 열이름 FROM 테이블이름;    //  열 검색
 SELECT 열이름 AS 별칭 FROM 테이블이름;  // 결과를 보여줄때 열이름을 별칭으로 바꾼다
 
 SELECT 열이름 FROM 테이블이름 WHERE 조건;
-SELECT 열이름 FROM 테이블이름 WHERE 조건 and 조건;  //  여러조건을 넣을 경우
+SELECT 열이름 FROM 테이블이름 WHERE 조건 and(or) 조건;  //  여러조건을 넣을 경우
 SELECT 열이름 FROM 테이블이름 WHERE 열이름 BETWEEN A and B;  //  열이름에서 A와 B사이의 값
-SELECT 열이름 FROM 테이블이름 WHERE 열이름 IN ('A', 'B', 'C');  //  열이름에서 A,B,C의 값을 고를때
+SELECT 열이름 FROM 테이블이름 WHERE 열이름 IN ('A', 'B', 'C');  //  열이름에서 A,B,C의 값을 고를때(A or B or C)
+SELECT 열이름 FROM 테이블이름 WHERE 열이름 IS (NOT) NULL;  //  값이 NULL인것을(아닌것) 검색할때 사용
 
 -- SELECT - 와일드카드
 SELECT 열이름 FROM 테이블이름 WHERE 열이름 LIKE '김%';  //  김으로 시작하는 모든것
@@ -107,16 +108,54 @@ SELECT 열이름 FROM 테이블이름 [WHERE 조건] [ORDER BY 열이름] LIMIT 
 SELECT 열이름 FROM 테이블이름 [WHERE 조건] [ORDER BY 열이름] LIMIT 시작위치, 개수;   //  원하는 위치에서 개수만큼 보여준다
 SELECT 열이름 FROM 테이블이름 [WHERE 조건] [ORDER BY 열이름] LIMIT 개수 OFFSET 위치;   //  원하는 위치에서 개수만큼 보여준다
 
+-- SELECT - GROUP BY
+SELECT 열이름 FROM 테이블이름 [WHERE 조건] GROUP BY 열이름 [ORDER BY 열이름];   //
+
+-- SELECT - SUM()함수
+SELECT SUM(열이름1) FROM 테이블이름 [WHERE 조건] GROUP BY 열이름2 [ORDER BY 열이름];   //  그룹바이로 묶은 열이름2 기준으로 열이름1의 합을 표시해준다.
+
+SUM()합계 AVG()평균 MAX()최대 MIN()최소 COUNT()개수 COUNT(DISTINCT)중복처리개수 STDEV()표준편차 VAR_SAMP()분산
+
+-- SELECT - GROUP BY HAVING
+SELECT 열이름 FROM 테이블이름 [WHERE 조건] GROUP BY 열이름 HAVING 조건 [ORDER BY 열이름];   //  조건에 맞는 함수값을 보여준다
+
+-- SELECT - GROUP BY WITH ROLLUP
+SELECT 열이름 FROM 테이블이름 [WHERE 조건] GROUP BY 열이름 [ORDER BY 열이름];   //  GROUP BY로 나눠진 것의 합계를 보여준다.
 
 
 ------  INSERT 사용방법 ------
 INSERT INTO 테이블이름 (열이름, 열이름, ........) VALUES (데이터, 데이터, ........); //  데이터 입력
 INSERT INTO 테이블이름 VALUES (데이터, 데이터, ........); //  모든 데이터를 입력하면 앞쪽() 생략가능
 
+-- INSERT + SELECT
+INSERT INTO 테이블이름 SELECT 열이름 FROM 테이블이름;  //  테이블을 복사할때 주로 쓴다.
+CREATE 테이블이름 (SELECT 열이름 FROM 복사할테이블이름);  //  테이블을 만들면서 복사한다
 
+
+------  UPDATE 사용방법 ------
+UPDATE 테이블이름 SET 열1=값1, 열2=값2, … WHERE 조건;  //  특정조건의 열값을 수정한다.
+
+------  DELETE 사용방법 ------
+DELETE FROM 테이블이름	[WHERE 조건];  //  테이블의 [특정조건의] 데이터를 삭제한다.
+
+-- DELETE, TRUNCATE, DROP의 차이점
+DELETE FROM 테이블이름;    //  DML 테이블은 남아있고 데이터만 지운다
+TRUNCATE TABLE 테이블이름; //  DDL 테이블은 남아있고 데이터만 지운다
+DROP TABLE 테이블이름;     //  DDL 테이블을 통채로 지운다
+
+DML은 트랜잭션을 발생시킴
+DDL은 트랜잭션을 발생시키지 않음
+
+ROLLBACK;   //  트랜잭션을 되돌려서 데이터를 복구한다.
+COMMIT;     //  작성한 데이터를 적용시킨다.
 
 
 ===========================
 DCL = 데이터 제어어(Control)
 ===========================
 GRANT(권한 부여) REBOKE(권한 제거) COMMIT(처리 적용) ROLLBACK(처리 취소)
+COMMIT, ROLLBACK은 TCL(트랜젝션 제어어)라고도 한다.
+
+------  GRANT 사용방법 ------
+
+------  REBOKE 사용방법 ------
