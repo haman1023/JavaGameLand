@@ -12,7 +12,7 @@ socket.on('connect', function() {
 
   /* 서버에 새로운 유저가 왔다고 알림 */
   socket.emit('newUser', name);
-})
+});
 
 /* 서버로부터 데이터 받은 경우 */
 socket.on('update', function(data) {
@@ -46,7 +46,7 @@ socket.on('update', function(data) {
 function send() {
   // 입력되어있는 데이터 가져오기
   var message = document.getElementById('test').value;
-  
+
   // 가져왔으니 데이터 빈칸으로 변경
   document.getElementById('test').value = '';
 
