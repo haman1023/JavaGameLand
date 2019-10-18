@@ -1,12 +1,12 @@
-// 설치한 express 모듈 불러오기
+// import modules
 var express = require('express');
 var path = require('path');
 var app = express();
 var mongoose = require('mongoose');
 
+//  connect database
 mongoose.connect(process.env.MONGO_DB);
 var db = mongoose.connection;
-
 db.once("open", function(){
   console.log("DB connected!");
 });

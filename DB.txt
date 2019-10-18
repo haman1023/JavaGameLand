@@ -116,12 +116,14 @@ SELECT SUM(열이름1) FROM 테이블이름 [WHERE 조건] GROUP BY 열이름2 [
 
 SUM()합계 AVG()평균 MAX()최대 MIN()최소 COUNT()개수 COUNT(DISTINCT)중복처리개수 STDEV()표준편차 VAR_SAMP()분산
 
--- SELECT - GROUP BY HAVING
+-- SELECT - GROUP BY HAVING (WHERE와는 다르게 함수를 이용할 수 있다)
 SELECT 열이름 FROM 테이블이름 [WHERE 조건] GROUP BY 열이름 HAVING 조건 [ORDER BY 열이름];   //  조건에 맞는 함수값을 보여준다
 
 -- SELECT - GROUP BY WITH ROLLUP
 SELECT 열이름 FROM 테이블이름 [WHERE 조건] GROUP BY 열이름 [ORDER BY 열이름];   //  GROUP BY로 나눠진 것의 합계를 보여준다.
 
+-- SELECT - FROM DUAL 굳이 어떤 테이블의 자료를 찾을 필요가 없을때
+SELECT 1+1 FROM DUAL; //  1+1의 합의 값을 출력해준다.
 
 ------  INSERT 사용방법 ------
 INSERT INTO 테이블이름 (열이름, 열이름, ........) VALUES (데이터, 데이터, ........); //  데이터 입력

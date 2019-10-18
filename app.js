@@ -1,74 +1,70 @@
-/* 설치한 express 모듈 불러오기 */
+// import modules
 var express = require('express');
-
-/* 설치한 socket.io 모듈 불러오기 */
-var socket = require('socket.io');
-
-/* Node.js 기본 내장 모듈 불러오기 */
-var http = require('http');
-
-/* Node.js 기본 내장 모듈 불러오기 */
-var fs = require('fs');
-
-/* express 객체 생성 */
 var app = express();
+var path = require('path');
+var mongoose = require('mongoose');
+var bodyParser = require('body-parser');
 
-/* express http 서버 생성 */
-var server = http.createServer(app);
+//  connect database
+mongoose.connect(process.env.MONGO_DB);
+var db = mongoose.connection;
+db.once("open", function(){
+  console.log("DB connected!");
+});
+db.on("error", function(err){
+  console.log("DB ERROR :", err);
+});
 
-/* 생성된 서버를 socket.io에 바인딩 */
-var io = socket(server);
+//  module setting
+var postSchema = mongoose.Schema({
+  title: {type:String, required:true},
+  body: {type:String, required:true},
+  createdAt: {type:Date, default:Date.now},
+  updatedAt: Date
+});
+var Post = mongoose.model('post', postSchema);
 
-app.use('/css', express.static('./static/css'));
-app.use('/js', express.static('./static/js'));
+//  view setting
+app.set("view engine", 'ejs');
 
-/* Get 방식으로 / 경로에 접속하면 실행 됨 */
-app.get('/', function(request, response) {
-  fs.readFile('./static/index.html', function(err, data) {
-    if(err) {
-      response.send('에러');
-    } else {
-      response.writeHead(200, {'Content-Type':'text/html'});
-      response.write(data);
-      response.end();
-    }
+//  set middlewares
+app.use(express.static(path.join(__dirname + '/public')));
+app.use(bodyParser.json());
+
+//  set routes
+app.get('/posts', function(req, res){
+  Post.find({}, function(err, posts){
+    if(err) return res.json({success:false, message:err});
+    res.json({success:true, data:posts});
+  });
+}); //  index
+app.post('/posts', function(req, res){
+  Post.create(req.body.post, function(err, post){
+    if(err) return res.json({success:false, message:err});
+    res.json({success:true, data:post});
+  });
+}); //  create
+app.get('/posts/:id', function(req, res){
+  Post.findById(req.params.id, function(err, post){
+    if(err) return res.json({success:false, message:err});
+    res.json({success:true, data:post});
+  });
+}); //  show
+app.put('/posts/:id', function(req, res){
+  req.body.post.updateAt=Date.now();
+  Post.findByIdAndUpdate(req.params.id, req.body.post, function(err, post){
+    if(err) return res.json({success:false, message:err});
+    res.json({success:true, message:post._id+" updated"});
+  });
+}); //  updated
+app.delete('/posts/:id', function(req, res){
+  Post.findByIdAndRemove(req.params.id, function(err, post){
+    if(err) return res.json({success:false, message:err});
+    res.json({success:true, message:post._id+" deleted"});
   });
 });
 
-io.sockets.on('connection', function(socket) {
-
-  /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
-  socket.on('newUser', function(name) {
-    console.log(name + ' 님이 접속하였습니다.');
-
-    /* 소켓에 이름 저장해두기 */
-    socket.name = name;
-
-    /* 모든 소켓에게 전송 */
-    io.sockets.emit('update', {type: 'connect', name: 'SERVER', message: name + '님이 접속하였습니다.'});
-  });
-
-  /* 전송한 메시지 받기 */
-  socket.on('message', function(data) {
-    /* 받은 데이터에 누가 보냈는지 이름을 추가 */
-    data.name = socket.name;
-
-    console.log(data);
-
-    /* 보낸 사람을 제외한 나머지 유저에게 메시지 전송 */
-    socket.broadcast.emit('update', data);
-  });
-
-  /* 접속 종료 */
-  socket.on('disconnect', function() {
-    console.log(socket.name + '님이 나가셨습니다.');
-
-    /* 나가는 사람을 제외한 나머지 유저에게 메시지 전송 */
-    socket.broadcast.emit('update', {type: 'disconnect', name: 'SERVER', message: socket.name + '님이 나가셨습니다.'});
-  });
-});
-
-/* 서버를 8080 포트로 listen */
-server.listen(3000, function() {
-  console.log('서버 실행 중..');
+//  start SERVER
+app.listen(3000, function(){
+  console.log('서버 실행 중...');
 });
